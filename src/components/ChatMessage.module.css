@@ -1,107 +1,122 @@
-/* ============================================
-   Chat Message — Minimal Premium
-   ============================================ */
-
-.wrap {
+.messageWrapper {
   display: flex;
-  animation: fadeInUp 0.35s ease both;
+  margin-bottom: 0.5rem;
+  width: 100%;
 }
 
-/* --- Alignment --- */
-.wrapUser {
+.user {
   justify-content: flex-end;
 }
 
-.wrapAgent {
+.agent {
   justify-content: flex-start;
-  gap: var(--space-sm);
 }
 
-.wrapSystem {
+.system {
   justify-content: center;
 }
 
-/* --- Agent Avatar --- */
-.avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-full);
-  background: linear-gradient(135deg, var(--donna-accent-cyan), var(--donna-accent-purple));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: #050810;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-/* --- Bubble --- */
 .bubble {
-  max-width: 75%;
-  padding: var(--space-md);
+  max-width: 80%;
+  padding: 0.75rem 1rem;
   border-radius: var(--radius-lg);
-  font-size: var(--text-sm);
-  line-height: 1.55;
-  color: var(--donna-text-primary);
-  position: relative;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
-.bubbleUser {
-  background: rgba(0, 229, 255, 0.06);
-  border: 1px solid rgba(0, 229, 255, 0.1);
+.user .bubble {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
   border-bottom-right-radius: var(--radius-sm);
 }
 
-.bubbleAgent {
-  background: rgba(179, 102, 255, 0.05);
-  border: 1px solid rgba(179, 102, 255, 0.08);
+.agent .bubble {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
   border-bottom-left-radius: var(--radius-sm);
 }
 
-.bubbleSystem {
+.system .bubble {
   background: transparent;
-  border: none;
-  color: var(--donna-text-muted);
-  font-size: var(--text-xs);
-  padding: var(--space-sm) 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
   text-align: center;
-  max-width: 100%;
 }
 
-/* --- Voice Indicator --- */
-.voiceTag {
+.agentHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.avatar {
+  width: 18px;
+  height: 18px;
+  background: var(--text-primary);
+  color: var(--bg-root);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.content {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.voiceIcon {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: var(--text-xs);
-  color: var(--donna-text-muted);
-  margin-bottom: 4px;
+  margin-right: 0.5rem;
+  color: var(--text-muted);
+  vertical-align: middle;
 }
 
-/* --- Timestamp --- */
-.time {
-  font-size: 0.625rem;
-  color: var(--donna-text-muted);
-  margin-top: 4px;
-  opacity: 0.7;
+.timestamp {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  align-self: flex-end;
+  margin-top: 0.25rem;
 }
 
-.timeRight {
-  text-align: right;
+/* Script actions / Blocks */
+.scriptBlock {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
 }
 
-.timeLeft {
-  text-align: left;
+.scriptHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.5rem;
 }
 
-/* ============================================
-   Responsive
-   ============================================ */
-@media (min-width: 768px) {
-  .bubble {
-    max-width: 65%;
-    font-size: var(--text-base);
-  }
+.scriptTitle {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.scriptContent {
+  color: var(--text-muted);
+  overflow-x: auto;
 }

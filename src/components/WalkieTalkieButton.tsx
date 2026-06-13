@@ -1,177 +1,101 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef } from 'react';
+import { Mic, Square, Loader2 } from 'lucide-react';
 import styles from './WalkieTalkieButton.module.css';
 
 interface WalkieTalkieButtonProps {
-  onRecordingStart?: () => void;
-  onRecordingStop?: () => void;
-  onRecordingComplete?: (audioBlob: Blob) => void;
-  isProcessing?: boolean;
+  onRecordingStart: () => void;
+  onRecordingStop: () => void;
+  onRecordingComplete: (audioBlob: Blob) => void;
+  isProcessing: boolean;
 }
-
-type RecordingState = 'idle' | 'recording' | 'processing';
 
 export default function WalkieTalkieButton({
   onRecordingStart,
   onRecordingStop,
   onRecordingComplete,
-  isProcessing = false,
+  isProcessing,
 }: WalkieTalkieButtonProps) {
-  const [state, setState] = useState<RecordingState>('idle');
-  const [duration, setDuration] = useState(0);
-
+  const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const audioChunksRef = useRef<BlobPart[]>([]);
 
-  // Sync external processing state
-  useEffect(() => {
-    if (isProcessing) {
-      setState('processing');
-    } else if (state === 'processing') {
-      setState('idle');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isProcessing]);
-
-  const formatTime = (seconds: number): string => {
-    const m = Math.floor(seconds / 60)
-      .toString()
-      .padStart(2, '0');
-    const s = (seconds % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-  };
-
-  const startRecording = useCallback(async () => {
-    if (state !== 'idle') return;
-
+  const startRecording = async () => {
+    if (isProcessing) return;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-      chunksRef.current = [];
-
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
 
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
-        onRecordingComplete?.(audioBlob);
-        streamRef.current?.getTracks().forEach((t) => t.stop());
-        streamRef.current = null;
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        onRecordingComplete(audioBlob);
+        stream.getTracks().forEach((track) => track.stop());
       };
 
       mediaRecorder.start();
-      setState('recording');
-      setDuration(0);
-      onRecordingStart?.();
-
-      timerRef.current = setInterval(() => {
-        setDuration((prev) => prev + 1);
-      }, 1000);
-    } catch (err) {
-      console.error('Microphone access denied:', err);
+      setIsRecording(true);
+      onRecordingStart();
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
     }
-  }, [state, onRecordingStart, onRecordingComplete]);
+  };
 
-  const stopRecording = useCallback(() => {
-    if (state !== 'recording') return;
-
-    mediaRecorderRef.current?.stop();
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      onRecordingStop();
     }
-    setState('processing');
-    onRecordingStop?.();
-  }, [state, onRecordingStop]);
+  };
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      streamRef.current?.getTracks().forEach((t) => t.stop());
-    };
-  }, []);
+  const handlePointerDown = (e: React.PointerEvent) => {
+    e.preventDefault();
+    startRecording();
+  };
 
-  // Determine CSS classes
-  const btnClass = [
-    styles.btn,
-    state === 'idle' && styles.idle,
-    state === 'recording' && styles.recording,
-    state === 'processing' && styles.processing,
-  ]
-    .filter(Boolean)
-    .join(' ');
+  const handlePointerUp = (e: React.PointerEvent) => {
+    e.preventDefault();
+    stopRecording();
+  };
 
-  const labelClass = [
-    styles.label,
-    state === 'recording' && styles.labelRecording,
-    state === 'processing' && styles.labelProcessing,
-  ]
-    .filter(Boolean)
-    .join(' ');
-
-  const icon =
-    state === 'recording' ? '🔴' : state === 'processing' ? '⟳' : '🎤';
-
-  const label =
-    state === 'recording'
-      ? 'Listening…'
-      : state === 'processing'
-        ? 'Processing…'
-        : 'Hold to Talk';
+  const handlePointerLeave = (e: React.PointerEvent) => {
+    e.preventDefault();
+    if (isRecording) {
+      stopRecording();
+    }
+  };
 
   return (
-    <div className={styles.wrap}>
-      {/* Pulse rings — recording */}
-      {state === 'recording' && (
-        <div className={styles.rings}>
-          <div className={styles.ring} />
-          <div className={styles.ring} />
-          <div className={styles.ring} />
-        </div>
-      )}
-
-      {/* Orbit dot — processing */}
-      {state === 'processing' && (
-        <div className={styles.orbitWrap}>
-          <div className={styles.orbitDot} />
-        </div>
-      )}
-
+    <div className={styles.buttonWrapper}>
+      {isRecording && <div className={`${styles.ring} ${styles.ringRecording}`} />}
       <button
-        className={btnClass}
-        onMouseDown={startRecording}
-        onMouseUp={stopRecording}
-        onMouseLeave={state === 'recording' ? stopRecording : undefined}
-        onTouchStart={(e) => {
-          e.preventDefault();
-          startRecording();
-        }}
-        onTouchEnd={(e) => {
-          e.preventDefault();
-          stopRecording();
-        }}
-        aria-label={label}
+        className={`${styles.pttButton} ${isRecording ? styles.recording : ''} ${
+          isProcessing ? styles.processing : ''
+        }`}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerLeave}
+        onContextMenu={(e) => e.preventDefault()}
+        disabled={isProcessing}
+        aria-label="Push to talk"
       >
-        <span
-          className={`${styles.icon} ${state === 'processing' ? styles.iconSpin : ''}`}
-        >
-          {icon}
-        </span>
+        {isProcessing ? (
+          <Loader2 size={32} className={styles.spinner} />
+        ) : isRecording ? (
+          <Square size={32} fill="currentColor" />
+        ) : (
+          <Mic size={32} />
+        )}
       </button>
-
-      <span className={labelClass}>{label}</span>
-
-      {state === 'recording' && (
-        <span className={styles.timer}>{formatTime(duration)}</span>
-      )}
     </div>
   );
 }

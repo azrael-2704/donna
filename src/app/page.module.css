@@ -1,86 +1,67 @@
-/* ============================================
-   Donna OS — Home Page
-   Hero PTT + Minimal Dashboard
-   ============================================ */
-
-/* --- App Shell --- */
 .shell {
   display: flex;
-  height: 100dvh;
-  width: 100%;
+  height: 100vh;
+  background-color: var(--bg-root);
+  color: var(--text-primary);
   overflow: hidden;
 }
 
-/* ============================================
-   Side Rail (Desktop only)
-   ============================================ */
+/* ===== Side Rail (Desktop Only) ===== */
 .sideRail {
   display: none;
+  width: 64px;
   flex-direction: column;
   align-items: center;
-  width: var(--sidebar-width);
-  padding: var(--space-md) 0;
-  background: var(--donna-bg-secondary);
-  border-right: 1px solid var(--donna-border);
-  gap: var(--space-sm);
-  flex-shrink: 0;
+  border-right: 1px solid var(--border-subtle);
+  padding: 1.5rem 0;
+  background-color: var(--bg-surface);
+}
+
+@media (min-width: 768px) {
+  .sideRail {
+    display: flex;
+  }
 }
 
 .railLogo {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--donna-accent-cyan), var(--donna-accent-purple));
+  width: 32px;
+  height: 32px;
+  background: var(--text-primary);
+  color: var(--bg-root);
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: var(--text-lg);
-  color: #050810;
-  margin-bottom: var(--space-lg);
-  flex-shrink: 0;
+  font-weight: 600;
+  margin-bottom: 2rem;
 }
 
 .railNav {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  gap: 1rem;
   flex: 1;
 }
 
 .railBtn {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-md);
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
-  color: var(--donna-text-muted);
-  transition: all var(--transition-base);
-  position: relative;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  transition: all 0.2s;
 }
 
 .railBtn:hover {
-  color: var(--donna-text-primary);
-  background: var(--donna-bg-card);
+  color: var(--text-primary);
+  background: var(--bg-elevated);
 }
 
 .railBtnActive {
-  color: var(--donna-accent-cyan);
-  background: var(--donna-accent-cyan-dim);
-}
-
-.railBtnActive::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 24px;
-  background: var(--donna-accent-cyan);
-  border-radius: 0 2px 2px 0;
+  color: var(--text-primary);
+  background: var(--bg-elevated);
 }
 
 .railBottom {
@@ -88,304 +69,239 @@
 }
 
 .railAvatar {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
+  background: var(--border-strong);
   border-radius: var(--radius-full);
-  background: linear-gradient(135deg, var(--donna-accent-purple), var(--donna-accent-cyan));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: #050810;
-  cursor: pointer;
-  transition: transform var(--transition-base);
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
-.railAvatar:hover {
-  transform: scale(1.1);
-}
-
-/* ============================================
-   Main Content Area
-   ============================================ */
+/* ===== Main Area ===== */
 .main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100dvh;
-  min-width: 0;
   position: relative;
 }
 
 /* --- Top Bar --- */
 .topBar {
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: var(--top-bar-height);
-  padding: 0 var(--space-lg);
-  padding-top: var(--safe-top);
-  border-bottom: 1px solid var(--donna-border);
-  flex-shrink: 0;
-  background: var(--donna-glass-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  z-index: 10;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--bg-root);
 }
 
 .topBarLeft {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: 0.75rem;
 }
 
 .mobileLogo {
-  width: 28px;
-  height: 28px;
+  display: none;
+  width: 24px;
+  height: 24px;
+  background: var(--text-primary);
+  color: var(--bg-root);
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, var(--donna-accent-cyan), var(--donna-accent-purple));
-  display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: var(--text-sm);
-  color: #050810;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+@media (max-width: 767px) {
+  .mobileLogo {
+    display: flex;
+  }
 }
 
 .topBarTitle {
-  font-size: var(--text-base);
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 0.9rem;
   letter-spacing: -0.01em;
 }
 
 .topBarRight {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
+  gap: 1rem;
 }
 
-.liveBadge {
+.viewToggle {
+  display: flex;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: 2px;
+}
+
+.toggleBtn {
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: var(--text-xs);
+}
+
+.toggleBtnActive {
+  background: var(--text-primary);
+  color: var(--bg-root);
   font-weight: 500;
-  color: var(--donna-accent-green);
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  background: rgba(0, 214, 143, 0.08);
-  border: 1px solid rgba(0, 214, 143, 0.15);
 }
 
-.liveDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--donna-accent-green);
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.tierBadge {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.tierFree {
-  color: var(--donna-text-secondary);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--donna-border-light);
-}
-
-.tierPro {
-  color: var(--donna-accent-amber);
-  background: rgba(255, 176, 32, 0.08);
-  border: 1px solid rgba(255, 176, 32, 0.2);
-}
-
-/* ============================================
-   Chat Messages Area
-   ============================================ */
+/* --- Chat Area --- */
 .chatArea {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-lg);
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
-  min-height: 0;
+  gap: 1.5rem;
+  padding-bottom: 100px;
 }
 
-.chatEmpty {
+@media (min-width: 768px) {
+  .chatArea {
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+
+/* --- Input Zone (Chat Mode) --- */
+.inputZone {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1.5rem;
+  background: linear-gradient(to top, var(--bg-root) 60%, transparent);
+}
+
+@media (min-width: 768px) {
+  .inputZone {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: flex-end;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 0.5rem;
+  gap: 0.5rem;
+}
+
+.inputWrapper:focus-within {
+  border-color: var(--text-secondary);
+}
+
+.chatInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.5rem;
+  resize: none;
+  min-height: 24px;
+  max-height: 120px;
+}
+
+.chatInput:focus {
+  outline: none;
+}
+
+.chatInput::placeholder {
+  color: var(--text-muted);
+}
+
+.iconBtn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  border-radius: var(--radius-md);
+}
+
+.iconBtn:hover {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+}
+
+.sendBtn {
+  background: var(--text-primary);
+  color: var(--bg-root);
+}
+
+.sendBtn:hover {
+  background: var(--text-secondary);
+  color: var(--bg-root);
+}
+
+/* --- Walkie Talkie Zone (PTT Mode) --- */
+.pttZone {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-md);
-  color: var(--donna-text-muted);
-  text-align: center;
+  gap: 2rem;
 }
 
-.chatEmptyIcon {
-  font-size: 2.5rem;
-  opacity: 0.4;
+.statusText {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
 
-.chatEmptyText {
-  font-size: var(--text-sm);
-  max-width: 240px;
-  line-height: 1.5;
-}
-
-/* ============================================
-   PTT Control Zone
-   ============================================ */
-.controlZone {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-xl) var(--space-lg);
-  padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--space-lg));
-  gap: var(--space-lg);
-  position: relative;
-}
-
-.controlZone::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--donna-border-light), transparent);
-}
-
-/* --- Status Pills --- */
-.statusRow {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.statusPill {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  color: var(--donna-text-secondary);
-  padding: 4px 12px;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--donna-border);
-}
-
-.pillDot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.dotGreen { background: var(--donna-accent-green); }
-.dotCyan { background: var(--donna-accent-cyan); }
-.dotAmber { background: var(--donna-accent-amber); }
-.dotPurple { background: var(--donna-accent-purple); }
-
-/* ============================================
-   Bottom Navigation (Mobile)
-   ============================================ */
+/* ===== Bottom Nav (Mobile Only) ===== */
 .bottomNav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: var(--bottom-nav-height);
-  padding-bottom: var(--safe-bottom);
   display: flex;
   align-items: center;
   justify-content: space-around;
-  background: var(--donna-glass-bg-strong);
-  backdrop-filter: blur(30px) saturate(150%);
-  -webkit-backdrop-filter: blur(30px) saturate(150%);
-  border-top: 1px solid var(--donna-border);
-  z-index: 100;
+  height: 64px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-root);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (min-width: 768px) {
+  .bottomNav {
+    display: none;
+  }
 }
 
 .navBtn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: var(--space-sm);
-  color: var(--donna-text-muted);
-  transition: color var(--transition-fast);
-  min-width: 56px;
-}
-
-.navBtn:hover,
-.navBtnActive {
-  color: var(--donna-text-primary);
+  gap: 4px;
+  color: var(--text-muted);
 }
 
 .navBtnActive {
-  color: var(--donna-accent-cyan);
-}
-
-.navIcon {
-  font-size: 1.3rem;
-  line-height: 1;
+  color: var(--text-primary);
 }
 
 .navLabel {
-  font-size: 0.625rem;
+  font-size: 0.65rem;
   font-weight: 500;
-  letter-spacing: 0.03em;
-}
-
-/* ============================================
-   Desktop Responsive (>= 768px)
-   ============================================ */
-@media (min-width: 768px) {
-  .sideRail {
-    display: flex;
-  }
-
-  .mobileLogo {
-    display: none;
-  }
-
-  .bottomNav {
-    display: none;
-  }
-
-  .controlZone {
-    padding-bottom: var(--space-xl);
-  }
-
-  .chatArea {
-    padding: var(--space-xl) var(--space-2xl);
-  }
-}
-
-/* ============================================
-   Large Desktop (>= 1200px)
-   ============================================ */
-@media (min-width: 1200px) {
-  .chatArea {
-    padding: var(--space-xl) var(--space-4xl);
-    max-width: 900px;
-    margin: 0 auto;
-    width: 100%;
-  }
 }

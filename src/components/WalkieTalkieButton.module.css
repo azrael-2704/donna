@@ -1,179 +1,92 @@
-/* ============================================
-   Walkie-Talkie Button — Premium PTT
-   ============================================ */
-
-.wrap {
+.buttonWrapper {
   position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: var(--space-md);
-}
-
-/* --- Pulse Rings (recording state) --- */
-.rings {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  justify-content: center;
   width: 140px;
   height: 140px;
-  pointer-events: none;
-  z-index: 0;
+}
+
+.pttButton {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 10;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.pttButton:hover {
+  background: var(--bg-elevated);
+  transform: scale(1.05);
+}
+
+.pttButton:active {
+  transform: scale(0.95);
+  background: var(--text-primary);
+  color: var(--bg-root);
+}
+
+.recording {
+  background: var(--text-primary);
+  color: var(--bg-root);
+  border-color: var(--text-primary);
+  transform: scale(1.1);
+}
+
+.processing {
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  border-color: var(--border-strong);
+  cursor: not-allowed;
 }
 
 .ring {
   position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 1.5px solid var(--donna-accent-red);
-  opacity: 0;
-  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-.ring:nth-child(2) { animation-delay: 0.5s; }
-.ring:nth-child(3) { animation-delay: 1s; }
-
-/* --- Orbit Ring (processing state) --- */
-.orbitWrap {
-  position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 150px;
-  height: 150px;
-  pointer-events: none;
-  z-index: 0;
-  animation: orbit 2s linear infinite;
-}
-
-.orbitDot {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--donna-accent-cyan);
-  box-shadow: 0 0 12px var(--donna-accent-cyan);
-}
-
-/* --- The Button --- */
-.btn {
-  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-strong);
   z-index: 1;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-smooth);
-  cursor: pointer;
-  -webkit-user-select: none;
-  user-select: none;
-  touch-action: none;
+  opacity: 0;
 }
 
-/* Idle state */
-.idle {
-  background: radial-gradient(circle at 40% 35%, rgba(0, 229, 255, 0.08), rgba(10, 15, 28, 0.9));
-  border: 1.5px solid rgba(0, 229, 255, 0.25);
-  box-shadow:
-    0 0 20px rgba(0, 229, 255, 0.12),
-    0 0 60px rgba(0, 229, 255, 0.05),
-    inset 0 0 30px rgba(0, 229, 255, 0.04);
+.ringRecording {
+  animation: ripple 1.5s linear infinite;
 }
 
-.idle:hover {
-  border-color: rgba(0, 229, 255, 0.4);
-  box-shadow:
-    0 0 30px rgba(0, 229, 255, 0.2),
-    0 0 80px rgba(0, 229, 255, 0.08),
-    inset 0 0 40px rgba(0, 229, 255, 0.06);
-  transform: scale(1.04);
-}
-
-.idle:active {
-  transform: scale(0.97);
-}
-
-/* Recording state */
-.recording {
-  background: radial-gradient(circle at 40% 35%, rgba(255, 71, 87, 0.12), rgba(10, 15, 28, 0.9));
-  border: 1.5px solid rgba(255, 71, 87, 0.4);
-  animation: recording-breathe 1.5s ease-in-out infinite;
-}
-
-/* Processing state */
-.processing {
-  background: radial-gradient(circle at 40% 35%, rgba(179, 102, 255, 0.08), rgba(10, 15, 28, 0.9));
-  border: 1.5px solid rgba(179, 102, 255, 0.25);
-  box-shadow:
-    0 0 20px rgba(179, 102, 255, 0.12),
-    0 0 60px rgba(179, 102, 255, 0.05);
-  cursor: wait;
-}
-
-/* --- Icon --- */
-.icon {
-  font-size: 2rem;
-  line-height: 1;
-  transition: all var(--transition-base);
-}
-
-.iconSpin {
-  animation: spin 1.5s linear infinite;
-}
-
-/* --- Label --- */
-.label {
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--donna-text-secondary);
-  letter-spacing: 0.02em;
-  transition: color var(--transition-fast);
-}
-
-.labelRecording {
-  color: var(--donna-accent-red);
-}
-
-.labelProcessing {
-  color: var(--donna-accent-purple);
-}
-
-/* --- Timer --- */
-.timer {
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--donna-accent-red);
-  letter-spacing: 0.1em;
-  animation: fadeIn 0.3s ease;
-}
-
-/* ============================================
-   Responsive
-   ============================================ */
-@media (min-width: 768px) {
-  .btn {
-    width: 140px;
-    height: 140px;
+@keyframes ripple {
+  0% {
+    width: 100px;
+    height: 100px;
+    opacity: 1;
+    border-color: var(--text-primary);
   }
-
-  .icon {
-    font-size: 2.25rem;
+  100% {
+    width: 200px;
+    height: 200px;
+    opacity: 0;
+    border-color: var(--border-subtle);
   }
+}
 
-  .rings {
-    width: 160px;
-    height: 160px;
-  }
+.spinner {
+  animation: spin 1s linear infinite;
+}
 
-  .orbitWrap {
-    width: 170px;
-    height: 170px;
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
   }
 }

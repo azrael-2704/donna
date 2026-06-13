@@ -1,0 +1,190 @@
+/* ============================================
+   Scripts Page
+   ============================================ */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  background: var(--donna-bg-primary);
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--top-bar-height);
+  padding: 0 var(--space-lg);
+  padding-top: var(--safe-top);
+  border-bottom: 1px solid var(--donna-border);
+  background: var(--donna-glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.newScriptBtn {
+  font-size: var(--text-sm);
+  color: var(--donna-accent-cyan);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 229, 255, 0.1);
+  transition: background var(--transition-fast);
+}
+
+.newScriptBtn:hover {
+  background: rgba(0, 229, 255, 0.2);
+}
+
+.gridArea {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+  padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--space-lg));
+  align-content: start;
+}
+
+.card {
+  background: var(--donna-bg-card);
+  border: 1px solid var(--donna-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+  animation: fadeInUp 0.3s ease both;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--donna-border-active);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.cardTitle {
+  font-size: var(--text-base);
+  font-weight: 500;
+  color: var(--donna-text-primary);
+}
+
+.badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.badgeRunning {
+  color: var(--donna-accent-green);
+  background: rgba(0, 214, 143, 0.1);
+  border: 1px solid rgba(0, 214, 143, 0.2);
+}
+
+.badgePaused {
+  color: var(--donna-accent-amber);
+  background: rgba(255, 176, 32, 0.1);
+  border: 1px solid rgba(255, 176, 32, 0.2);
+}
+
+.badgeFailed {
+  color: var(--donna-accent-red);
+  background: rgba(255, 71, 87, 0.1);
+  border: 1px solid rgba(255, 71, 87, 0.2);
+}
+
+.badgeDraft {
+  color: var(--donna-text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--donna-border);
+}
+
+.cardBody {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+  font-size: var(--text-xs);
+  color: var(--donna-text-secondary);
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metaLabel {
+  color: var(--donna-text-muted);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}
+
+.cardFooter {
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--donna-border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.toggleSwitch {
+  width: 40px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--donna-bg-secondary);
+  border: 1px solid var(--donna-border);
+  position: relative;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.toggleSwitch.active {
+  background: var(--donna-accent-cyan);
+  border-color: var(--donna-accent-cyan);
+}
+
+.toggleThumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--donna-text-primary);
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform var(--transition-fast);
+}
+
+.toggleSwitch.active .toggleThumb {
+  transform: translateX(20px);
+  background: #050810;
+}
+
+@media (min-width: 768px) {
+  .shell {
+    margin-left: var(--sidebar-width);
+  }
+  .gridArea {
+    grid-template-columns: 1fr 1fr;
+    padding: var(--space-xl) var(--space-4xl);
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}

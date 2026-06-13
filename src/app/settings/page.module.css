@@ -1,0 +1,265 @@
+/* ============================================
+   Settings Page
+   ============================================ */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  background: var(--donna-bg-primary);
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--top-bar-height);
+  padding: 0 var(--space-lg);
+  padding-top: var(--safe-top);
+  border-bottom: 1px solid var(--donna-border);
+  background: var(--donna-glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.contentArea {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+  padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--space-xl));
+}
+
+.sectionTitle {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--donna-text-primary);
+  margin-bottom: var(--space-md);
+}
+
+/* --- Profile Section --- */
+.profileCard {
+  background: var(--donna-bg-card);
+  border: 1px solid var(--donna-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.inputLabel {
+  font-size: var(--text-sm);
+  color: var(--donna-text-muted);
+}
+
+.inputField {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--donna-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  color: var(--donna-text-primary);
+  font-size: var(--text-base);
+  outline: none;
+}
+
+.inputField:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* --- Integrations Section --- */
+.integrationsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+
+.integrationCard {
+  background: var(--donna-bg-card);
+  border: 1px solid var(--donna-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.integrationInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.integrationIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--donna-bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.integrationName {
+  font-size: var(--text-base);
+  font-weight: 500;
+}
+
+.integrationStatus {
+  font-size: var(--text-sm);
+  color: var(--donna-text-muted);
+}
+
+.connectBtn {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-sm);
+  background: var(--donna-bg-secondary);
+  border: 1px solid var(--donna-border);
+  transition: background var(--transition-fast);
+}
+
+.connectBtn:hover {
+  background: var(--donna-border-active);
+}
+
+.connectBtn.connected {
+  color: var(--donna-accent-green);
+  border-color: rgba(0, 214, 143, 0.3);
+  background: rgba(0, 214, 143, 0.05);
+}
+
+/* --- Subscription Section --- */
+.pricingGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+}
+
+.pricingCard {
+  background: var(--donna-bg-card);
+  border: 1px solid var(--donna-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.pricingCardPro {
+  border: 1px solid transparent;
+  background: linear-gradient(var(--donna-bg-card), var(--donna-bg-card)) padding-box,
+              linear-gradient(135deg, var(--donna-accent-cyan), var(--donna-accent-purple)) border-box;
+}
+
+.pricingCardPro::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--donna-accent-cyan), var(--donna-accent-purple));
+}
+
+.tierName {
+  font-size: var(--text-xl);
+  font-weight: 600;
+}
+
+.tierPrice {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--donna-text-primary);
+}
+
+.tierPeriod {
+  font-size: var(--text-sm);
+  color: var(--donna-text-muted);
+  font-weight: 400;
+}
+
+.featureList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  flex: 1;
+}
+
+.featureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  font-size: var(--text-sm);
+  color: var(--donna-text-secondary);
+}
+
+.featureIcon {
+  color: var(--donna-accent-cyan);
+}
+
+.pricingBtn {
+  width: 100%;
+  padding: var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  text-align: center;
+  transition: all var(--transition-fast);
+}
+
+.pricingBtnFree {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--donna-text-muted);
+  border: 1px solid var(--donna-border);
+}
+
+.pricingBtnPro {
+  background: linear-gradient(135deg, var(--donna-accent-cyan), var(--donna-accent-purple));
+  color: #050810;
+  border: none;
+}
+
+.pricingBtnPro:hover {
+  box-shadow: var(--shadow-glow-cyan);
+  transform: translateY(-2px);
+}
+
+@media (min-width: 768px) {
+  .shell {
+    margin-left: var(--sidebar-width);
+  }
+  .contentArea {
+    padding: var(--space-xl) var(--space-4xl);
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .integrationsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .pricingGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

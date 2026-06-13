@@ -1,0 +1,179 @@
+/* ============================================
+   Walkie-Talkie Button — Premium PTT
+   ============================================ */
+
+.wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+/* --- Pulse Rings (recording state) --- */
+.rings {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 140px;
+  height: 140px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--donna-accent-red);
+  opacity: 0;
+  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.ring:nth-child(2) { animation-delay: 0.5s; }
+.ring:nth-child(3) { animation-delay: 1s; }
+
+/* --- Orbit Ring (processing state) --- */
+.orbitWrap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 150px;
+  height: 150px;
+  pointer-events: none;
+  z-index: 0;
+  animation: orbit 2s linear infinite;
+}
+
+.orbitDot {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--donna-accent-cyan);
+  box-shadow: 0 0 12px var(--donna-accent-cyan);
+}
+
+/* --- The Button --- */
+.btn {
+  position: relative;
+  z-index: 1;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-smooth);
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
+}
+
+/* Idle state */
+.idle {
+  background: radial-gradient(circle at 40% 35%, rgba(0, 229, 255, 0.08), rgba(10, 15, 28, 0.9));
+  border: 1.5px solid rgba(0, 229, 255, 0.25);
+  box-shadow:
+    0 0 20px rgba(0, 229, 255, 0.12),
+    0 0 60px rgba(0, 229, 255, 0.05),
+    inset 0 0 30px rgba(0, 229, 255, 0.04);
+}
+
+.idle:hover {
+  border-color: rgba(0, 229, 255, 0.4);
+  box-shadow:
+    0 0 30px rgba(0, 229, 255, 0.2),
+    0 0 80px rgba(0, 229, 255, 0.08),
+    inset 0 0 40px rgba(0, 229, 255, 0.06);
+  transform: scale(1.04);
+}
+
+.idle:active {
+  transform: scale(0.97);
+}
+
+/* Recording state */
+.recording {
+  background: radial-gradient(circle at 40% 35%, rgba(255, 71, 87, 0.12), rgba(10, 15, 28, 0.9));
+  border: 1.5px solid rgba(255, 71, 87, 0.4);
+  animation: recording-breathe 1.5s ease-in-out infinite;
+}
+
+/* Processing state */
+.processing {
+  background: radial-gradient(circle at 40% 35%, rgba(179, 102, 255, 0.08), rgba(10, 15, 28, 0.9));
+  border: 1.5px solid rgba(179, 102, 255, 0.25);
+  box-shadow:
+    0 0 20px rgba(179, 102, 255, 0.12),
+    0 0 60px rgba(179, 102, 255, 0.05);
+  cursor: wait;
+}
+
+/* --- Icon --- */
+.icon {
+  font-size: 2rem;
+  line-height: 1;
+  transition: all var(--transition-base);
+}
+
+.iconSpin {
+  animation: spin 1.5s linear infinite;
+}
+
+/* --- Label --- */
+.label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--donna-text-secondary);
+  letter-spacing: 0.02em;
+  transition: color var(--transition-fast);
+}
+
+.labelRecording {
+  color: var(--donna-accent-red);
+}
+
+.labelProcessing {
+  color: var(--donna-accent-purple);
+}
+
+/* --- Timer --- */
+.timer {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--donna-accent-red);
+  letter-spacing: 0.1em;
+  animation: fadeIn 0.3s ease;
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+@media (min-width: 768px) {
+  .btn {
+    width: 140px;
+    height: 140px;
+  }
+
+  .icon {
+    font-size: 2.25rem;
+  }
+
+  .rings {
+    width: 160px;
+    height: 160px;
+  }
+
+  .orbitWrap {
+    width: 170px;
+    height: 170px;
+  }
+}

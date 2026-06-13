@@ -1,0 +1,107 @@
+/* ============================================
+   Chat Message — Minimal Premium
+   ============================================ */
+
+.wrap {
+  display: flex;
+  animation: fadeInUp 0.35s ease both;
+}
+
+/* --- Alignment --- */
+.wrapUser {
+  justify-content: flex-end;
+}
+
+.wrapAgent {
+  justify-content: flex-start;
+  gap: var(--space-sm);
+}
+
+.wrapSystem {
+  justify-content: center;
+}
+
+/* --- Agent Avatar --- */
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--donna-accent-cyan), var(--donna-accent-purple));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #050810;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* --- Bubble --- */
+.bubble {
+  max-width: 75%;
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: var(--donna-text-primary);
+  position: relative;
+}
+
+.bubbleUser {
+  background: rgba(0, 229, 255, 0.06);
+  border: 1px solid rgba(0, 229, 255, 0.1);
+  border-bottom-right-radius: var(--radius-sm);
+}
+
+.bubbleAgent {
+  background: rgba(179, 102, 255, 0.05);
+  border: 1px solid rgba(179, 102, 255, 0.08);
+  border-bottom-left-radius: var(--radius-sm);
+}
+
+.bubbleSystem {
+  background: transparent;
+  border: none;
+  color: var(--donna-text-muted);
+  font-size: var(--text-xs);
+  padding: var(--space-sm) 0;
+  text-align: center;
+  max-width: 100%;
+}
+
+/* --- Voice Indicator --- */
+.voiceTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-xs);
+  color: var(--donna-text-muted);
+  margin-bottom: 4px;
+}
+
+/* --- Timestamp --- */
+.time {
+  font-size: 0.625rem;
+  color: var(--donna-text-muted);
+  margin-top: 4px;
+  opacity: 0.7;
+}
+
+.timeRight {
+  text-align: right;
+}
+
+.timeLeft {
+  text-align: left;
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+@media (min-width: 768px) {
+  .bubble {
+    max-width: 65%;
+    font-size: var(--text-base);
+  }
+}

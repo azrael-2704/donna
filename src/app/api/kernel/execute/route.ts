@@ -7,13 +7,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { script_id, user_id, manual_code } = body;
 
-    const supabase = createAdminClient();
-
     let codeToExecute = manual_code;
     let userId = user_id;
+    let supabase: any = null;
 
     // If a script_id is provided, fetch it from the database
     if (script_id) {
+      supabase = createAdminClient();
       const { data: script, error } = await supabase
         .from('scripts')
         .select('*')

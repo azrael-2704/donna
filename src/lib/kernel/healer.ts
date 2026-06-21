@@ -3,7 +3,7 @@
  * Automatically debugs and patches failing scripts.
  */
 
-const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
+import { GoogleGenAI } from '@google/genai';
 
 export interface HealerOptions {
   code: string;
@@ -22,52 +22,46 @@ CRITICAL RULES:
 4. Do not include explanations, apologies, or comments outside the code block.
 `;
 
-export async function healScript(options: HealerOptions): Promise<string> {
-  const model = options.model || 'gemini-2.0-flash';
-  const url = `${GEMINI_API_BASE}/models/${model}:generateContent?key=${options.apiKey}`;
+export interface HealerResult {
+  code: string;
+  usage?: any;
+}
+
+export async function healScript(options: HealerOptions): Promise<HealerResult> {
+  const model = options.model || 'gemini-3.5-flash';
+  const ai = new GoogleGenAI({ apiKey: options.apiKey });
 
   const promptText = `ORIGINAL CODE:\n${options.code}\n\nERROR TRACE:\n${options.errorTrace}\n\nPlease provide the complete, patched Python script.`;
 
-  const body = {
-    contents: [
-      {
-        role: 'user',
-        parts: [{ text: promptText }],
-      },
-    ],
-    systemInstruction: {
-      parts: [{ text: HEALER_SYSTEM_PROMPT }],
-    },
-    generationConfig: {
-      temperature: 0.1,
-      maxOutputTokens: 4096,
-    },
-  };
+  try {
+    const response = await ai.models.generateContent({
+      model,
+      contents: promptText,
+      config: {
+        systemInstruction: HEALER_SYSTEM_PROMPT,
+        temperature: 0.1,
+        maxOutputTokens: 4096,
+      }
+    });
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+    let rawText = response.text || '';
 
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`Donna Healer failed (${response.status}): ${errorBody}`);
+    // Defensive cleanup
+    if (rawText.startsWith('\`\`\`python')) {
+      rawText = rawText.replace(/^\`\`\`python\n/, '');
+    }
+    if (rawText.startsWith('\`\`\`')) {
+      rawText = rawText.replace(/^\`\`\`\n?/, '');
+    }
+    if (rawText.endsWith('\`\`\`')) {
+      rawText = rawText.replace(/\n?\`\`\`$/, '');
+    }
+
+    return {
+      code: rawText.trim(),
+      usage: response.usageMetadata
+    };
+  } catch (error: any) {
+    throw new Error(`Donna Healer failed: ${error.message}`);
   }
-
-  const data = await response.json();
-  let rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? '';
-
-  // Defensive cleanup
-  if (rawText.startsWith('\`\`\`python')) {
-    rawText = rawText.replace(/^\`\`\`python\n/, '');
-  }
-  if (rawText.startsWith('\`\`\`')) {
-    rawText = rawText.replace(/^\`\`\`\n?/, '');
-  }
-  if (rawText.endsWith('\`\`\`')) {
-    rawText = rawText.replace(/\n?\`\`\`$/, '');
-  }
-
-  return rawText.trim();
 }

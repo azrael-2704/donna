@@ -17,33 +17,33 @@ interface ModelOption {
 
 const modelOptions: ModelOption[] = [
   {
-    id: 'gemini-2.0-flash',
-    name: 'Gemini 2.0 Flash',
+    id: 'gemini-2.5-flash',
+    name: 'Gemini 2.5 Flash',
     provider: 'Google AI',
     contextWindow: '1,048,576 tokens',
     latency: 'Ultra-Low',
-    capabilities: ['Text', 'Audio input', 'Vision', 'Tool Calling', 'Code Execution'],
+    capabilities: ['Text', 'Audio input', 'Vision', 'Tool Calling'],
     description: 'Default. Next-generation speed and quality. Highly capable, supports native multimodal inputs and real-time execution.',
     recommended: true,
   },
   {
-    id: 'gemini-2.0-pro-exp-02-05',
-    name: 'Gemini 2.0 Pro (Experimental)',
+    id: 'gemini-2.5-pro',
+    name: 'Gemini 2.5 Pro',
     provider: 'Google AI',
     contextWindow: '2,097,152 tokens',
     latency: 'Medium',
-    capabilities: ['Complex Reasoning', 'Advanced Coding', 'Vision', 'Tool Calling'],
-    description: 'Designed for high-accuracy reasoning, complex coding, and multi-step logic workflows. Outstanding for heavy scripting tasks.',
+    capabilities: ['Text', 'Audio input', 'Vision', 'Tool Calling', 'Deep Reasoning'],
+    description: 'Heavyweight reasoning model. Slower but capable of handling extremely complex architectural tasks and long contexts.',
     recommended: false,
   },
   {
-    id: 'gemini-1.5-pro',
-    name: 'Gemini 1.5 Pro',
+    id: 'gemini-2.0-flash-exp',
+    name: 'Gemini 2.0 Flash (Exp)',
     provider: 'Google AI',
-    contextWindow: '2,097,152 tokens',
-    latency: 'Medium',
-    capabilities: ['Deep Context', 'Audio input', 'Vision', 'Tool Calling', 'Code Execution'],
-    description: 'Production-grade long context model. Excels in detailed analysis, structural translation, and broad code repositories.',
+    contextWindow: '1,048,576 tokens',
+    latency: 'Ultra-Low',
+    capabilities: ['Text', 'Audio input', 'Vision', 'Tool Calling', 'Search Grounding'],
+    description: 'Experimental 2.0 Flash model. Offers cutting-edge features but may have changing APIs or instability.',
     recommended: false,
   },
   {
@@ -52,23 +52,45 @@ const modelOptions: ModelOption[] = [
     provider: 'Google AI',
     contextWindow: '1,048,576 tokens',
     latency: 'Low',
-    capabilities: ['Text', 'Audio input', 'Vision', 'Speed'],
-    description: 'Efficient and light production model. Ideal for simple conversations and quick notifications.',
+    capabilities: ['Text', 'Audio', 'Vision', 'Tool Calling'],
+    description: 'Solid, reliable, and fast baseline model. Great for most conversational tasks and simple coding.',
+    recommended: false,
+  },
+  {
+    id: 'gemini-1.5-flash-8b',
+    name: 'Gemini 1.5 Flash-8B',
+    provider: 'Google AI',
+    contextWindow: '1,048,576 tokens',
+    latency: 'Ultra-Low',
+    capabilities: ['Text', 'Audio', 'Vision'],
+    description: 'Extremely fast and lightweight model variant. Perfect for quick routing, auditing, and simple JSON tasks.',
+    recommended: false,
+  },
+  {
+    id: 'gemini-1.5-pro',
+    name: 'Gemini 1.5 Pro',
+    provider: 'Google AI',
+    contextWindow: '2,097,152 tokens',
+    latency: 'High',
+    capabilities: ['Text', 'Audio', 'Vision', 'Tool Calling', 'Math'],
+    description: 'Legacy Pro model. Highly capable reasoning engine available on the free tier with a generous context window.',
     recommended: false,
   },
 ];
 
 export default function ModelsPage() {
-  const [selectedModel, setSelectedModel] = useState('gemini-2.0-flash');
+  const [selectedModel, setSelectedModel] = useState('gemini-2.5-flash');
   const [temperature, setTemperature] = useState(0.7);
   const [maxTokens, setMaxTokens] = useState(1024);
   
-  // Playground state
   const [prompt, setPrompt] = useState('');
   const [response, setResponse] = useState('');
   const [isPending, setIsPending] = useState(false);
 
-  // Read cookies on mount
+  // Provider status
+  const [providerStatus, setProviderStatus] = useState<Record<string, boolean>>({});
+
+  // Read cookies and status on mount
   useEffect(() => {
     const getCookie = (name: string) => {
       const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]*)'));
@@ -82,6 +104,16 @@ export default function ModelsPage() {
     if (cookieModel) setSelectedModel(cookieModel);
     if (cookieTemp) setTemperature(parseFloat(cookieTemp));
     if (cookieMaxTokens) setMaxTokens(parseInt(cookieMaxTokens, 10));
+
+    // Fetch provider status
+    fetch('/api/models/status')
+      .then(res => res.json())
+      .then(data => {
+        if (data.providers) {
+          setProviderStatus(data.providers);
+        }
+      })
+      .catch(err => console.error('Failed to fetch provider status:', err));
   }, []);
 
   // Save changes to cookies
@@ -149,15 +181,22 @@ export default function ModelsPage() {
         <div className={styles.modelsGrid}>
           {modelOptions.map((model) => {
             const isSelected = selectedModel === model.id;
+            const isAvailable = providerStatus[model.provider] !== false; // default true if loading
             
             return (
               <div 
                 key={model.id} 
-                className={`${styles.modelCard} ${isSelected ? styles.cardSelected : ''}`}
-                onClick={() => handleSelectModel(model.id)}
+                className={`${styles.modelCard} ${isSelected ? styles.cardSelected : ''} ${!isAvailable ? 'opacity-50 grayscale' : ''}`}
+                onClick={() => isAvailable && handleSelectModel(model.id)}
               >
-                {model.recommended && (
+                {model.recommended && isAvailable && (
                   <span className={styles.recommendedBadge}>RECOMMENDED</span>
+                )}
+                {!isAvailable && (
+                  <span className="absolute top-4 right-4 bg-red-500/10 text-red-500 border border-red-500/20 text-[10px] font-bold px-2 py-0.5 rounded tracking-wider uppercase">Missing Key</span>
+                )}
+                {isAvailable && Object.keys(providerStatus).length > 0 && (
+                   <span className="absolute top-4 right-4 bg-green-500/10 text-green-500 border border-green-500/20 text-[10px] font-bold px-2 py-0.5 rounded tracking-wider uppercase">Available</span>
                 )}
                 
                 <div className={styles.cardHeader}>
@@ -196,13 +235,14 @@ export default function ModelsPage() {
                 </div>
 
                 <button 
-                  className={`${styles.selectBtn} ${isSelected ? styles.selectBtnActive : ''}`}
+                  className={`${styles.selectBtn} ${isSelected ? styles.selectBtnActive : ''} ${!isAvailable ? 'cursor-not-allowed opacity-50' : ''}`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleSelectModel(model.id);
+                    if (isAvailable) handleSelectModel(model.id);
                   }}
+                  disabled={!isAvailable}
                 >
-                  {isSelected ? 'Currently Selected' : 'Select Model'}
+                  {!isAvailable ? 'Requires API Key' : isSelected ? 'Currently Selected' : 'Select Model'}
                 </button>
               </div>
             );

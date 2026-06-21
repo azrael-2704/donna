@@ -1,0 +1,119 @@
+.sidebar {
+  width: 80px;
+  height: calc(100vh - 48px);
+  margin: 24px 0 24px 24px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 0;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+  z-index: 100;
+}
+
+@media (prefers-color-scheme: dark) {
+  .sidebar {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  }
+}
+
+.logoSection {
+  margin-bottom: 3rem;
+}
+
+.logoMark {
+  width: 40px;
+  height: 40px;
+  background: var(--accent-primary);
+  color: var(--bg-surface);
+  border-radius: var(--radius-md);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.navSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  flex: 1;
+}
+
+.navItem {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.navItem:hover {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+}
+
+.navItem.active {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+
+.icon {
+  transition: transform 0.2s ease;
+}
+
+.navItem:hover .icon {
+  transform: scale(1.1);
+}
+
+/* Tooltip on hover */
+.tooltip {
+  position: absolute;
+  left: 100%;
+  margin-left: 1rem;
+  background: var(--text-primary);
+  color: var(--bg-root);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.navItem:hover .tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.bottomSection {
+  margin-top: auto;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

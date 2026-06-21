@@ -4,11 +4,17 @@ import styles from './ChatMessage.module.css';
 import { Mic, Terminal, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 
 export interface ScriptBlockProps {
-  status: 'synthesizing' | 'auditing' | 'executing' | 'completed' | 'failed';
+  status: 'synthesizing' | 'auditing' | 'executing' | 'completed' | 'failed' | 'healing';
   code?: string;
   output?: string;
   error?: string;
   name?: string;
+  audit?: {
+    approved: boolean;
+    reason: string;
+    riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+    blockedFunctions: string[];
+  };
 }
 
 interface ChatMessageProps {
@@ -62,6 +68,19 @@ export default function ChatMessage({ sender, content, timestamp, type, script }
               <pre className={styles.scriptContent}>
                 <code>{script.code}</code>
               </pre>
+            )}
+            {script.audit && (
+              <details className={styles.auditDetails}>
+                <summary className={styles.auditSummary}>
+                  Security Audit ({script.audit.riskLevel} Risk)
+                </summary>
+                <div className={styles.auditBody}>
+                  <p><strong>Reason:</strong> {script.audit.reason}</p>
+                  {(script.audit.blockedFunctions?.length || 0) > 0 && (
+                     <p><strong>Blocked APIs:</strong> {script.audit.blockedFunctions.join(', ')}</p>
+                  )}
+                </div>
+              </details>
             )}
             {script.output && script.status === 'completed' && (
               <pre className={styles.scriptContent}>

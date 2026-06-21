@@ -6,7 +6,7 @@
   display: flex;
   flex-direction: column;
   height: 100dvh;
-  background: var(--donna-bg-primary);
+  background: var(--bg-root);
 }
 
 .topBar {
@@ -14,9 +14,9 @@
   align-items: center;
   justify-content: space-between;
   height: var(--top-bar-height);
-  padding: 0 var(--space-lg);
+  padding: 0 24px;
   padding-top: var(--safe-top);
-  border-bottom: 1px solid var(--donna-border);
+  border-bottom: 1px solid var(--border-subtle);
   background: var(--donna-glass-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -25,56 +25,56 @@
 }
 
 .title {
-  font-size: var(--text-base);
+  font-size: 1rem;
   font-weight: 600;
 }
 
 .contentArea {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-lg);
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2xl);
-  padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--space-xl));
+  gap: 48px;
+  padding-bottom: calc(0px + 0px + 32px);
 }
 
 .sectionTitle {
-  font-size: var(--text-lg);
+  font-size: 1.125rem;
   font-weight: 600;
-  color: var(--donna-text-primary);
-  margin-bottom: var(--space-md);
+  color: var(--text-primary);
+  margin-bottom: 16px;
 }
 
 /* --- Profile Section --- */
 .profileCard {
-  background: var(--donna-bg-card);
-  border: 1px solid var(--donna-border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: var(--space-lg);
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: 16px;
 }
 
 .inputGroup {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  gap: 4px;
 }
 
 .inputLabel {
-  font-size: var(--text-sm);
-  color: var(--donna-text-muted);
+  font-size: 0.875rem;
+  color: var(--text-muted);
 }
 
 .inputField {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--donna-border);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  padding: var(--space-sm) var(--space-md);
-  color: var(--donna-text-primary);
-  font-size: var(--text-base);
+  padding: 8px 16px;
+  color: var(--text-primary);
+  font-size: 1rem;
   outline: none;
 }
 
@@ -87,31 +87,31 @@
 .integrationsGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-md);
+  gap: 16px;
 }
 
 .integrationCard {
-  background: var(--donna-bg-card);
-  border: 1px solid var(--donna-border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: var(--space-md);
+  padding: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-md);
+  gap: 16px;
 }
 
 .integrationInfo {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
+  gap: 16px;
 }
 
 .integrationIcon {
   width: 40px;
   height: 40px;
   border-radius: var(--radius-sm);
-  background: var(--donna-bg-secondary);
+  background: var(--bg-elevated);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -119,31 +119,31 @@
 }
 
 .integrationName {
-  font-size: var(--text-base);
+  font-size: 1rem;
   font-weight: 500;
 }
 
 .integrationStatus {
-  font-size: var(--text-sm);
-  color: var(--donna-text-muted);
+  font-size: 0.875rem;
+  color: var(--text-muted);
 }
 
 .connectBtn {
-  font-size: var(--text-sm);
+  font-size: 0.875rem;
   font-weight: 500;
-  padding: var(--space-xs) var(--space-md);
+  padding: 4px 16px;
   border-radius: var(--radius-sm);
-  background: var(--donna-bg-secondary);
-  border: 1px solid var(--donna-border);
-  transition: background var(--transition-fast);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  transition: background 0.2s ease;
 }
 
 .connectBtn:hover {
-  background: var(--donna-border-active);
+  background: var(--border-subtle-active);
 }
 
 .connectBtn.connected {
-  color: var(--donna-accent-green);
+  color: #00d68f;
   border-color: rgba(0, 214, 143, 0.3);
   background: rgba(0, 214, 143, 0.05);
 }
@@ -152,25 +152,25 @@
 .pricingGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-lg);
+  gap: 24px;
 }
 
 .pricingCard {
-  background: var(--donna-bg-card);
-  border: 1px solid var(--donna-border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: var(--space-xl);
+  padding: 32px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: 24px;
   position: relative;
   overflow: hidden;
 }
 
 .pricingCardPro {
   border: 1px solid transparent;
-  background: linear-gradient(var(--donna-bg-card), var(--donna-bg-card)) padding-box,
-              linear-gradient(135deg, var(--donna-accent-cyan), var(--donna-accent-purple)) border-box;
+  background: linear-gradient(var(--bg-surface), var(--bg-surface)) padding-box,
+              linear-gradient(135deg, #00e5ff, #b026ff) border-box;
 }
 
 .pricingCardPro::before {
@@ -180,69 +180,69 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--donna-accent-cyan), var(--donna-accent-purple));
+  background: linear-gradient(90deg, #00e5ff, #b026ff);
 }
 
 .tierName {
-  font-size: var(--text-xl);
+  font-size: 1.25rem;
   font-weight: 600;
 }
 
 .tierPrice {
-  font-size: var(--text-3xl);
+  font-size: 1.875rem;
   font-weight: 700;
-  color: var(--donna-text-primary);
+  color: var(--text-primary);
 }
 
 .tierPeriod {
-  font-size: var(--text-sm);
-  color: var(--donna-text-muted);
+  font-size: 0.875rem;
+  color: var(--text-muted);
   font-weight: 400;
 }
 
 .featureList {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
+  gap: 8px;
   flex: 1;
 }
 
 .featureItem {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-sm);
-  font-size: var(--text-sm);
-  color: var(--donna-text-secondary);
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
 }
 
 .featureIcon {
-  color: var(--donna-accent-cyan);
+  color: #00e5ff;
 }
 
 .pricingBtn {
   width: 100%;
-  padding: var(--space-sm);
+  padding: 8px;
   border-radius: var(--radius-sm);
   font-weight: 600;
-  font-size: var(--text-sm);
+  font-size: 0.875rem;
   text-align: center;
-  transition: all var(--transition-fast);
+  transition: all 0.2s ease;
 }
 
 .pricingBtnFree {
   background: rgba(255, 255, 255, 0.05);
-  color: var(--donna-text-muted);
-  border: 1px solid var(--donna-border);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
 }
 
 .pricingBtnPro {
-  background: linear-gradient(135deg, var(--donna-accent-cyan), var(--donna-accent-purple));
+  background: linear-gradient(135deg, #00e5ff, #b026ff);
   color: #050810;
   border: none;
 }
 
 .pricingBtnPro:hover {
-  box-shadow: var(--shadow-glow-cyan);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
   transform: translateY(-2px);
 }
 
@@ -251,7 +251,7 @@
     margin-left: var(--sidebar-width);
   }
   .contentArea {
-    padding: var(--space-xl) var(--space-4xl);
+    padding: 32px 80px;
     max-width: 1000px;
     margin: 0 auto;
     width: 100%;

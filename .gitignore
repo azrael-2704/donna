@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Python virtual environment
+donnas-world/
+.donna/
+
+# Donna OS Encrypted Vault
+.donna_master_key
+.donna_vault_key
+.donna_secrets
+
+# Donna System Artifacts
+artifacts/

@@ -3,91 +3,115 @@
  * Synthesizes Python code based on user intent.
  */
 
-const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
+import { GoogleGenAI, Type, Schema } from '@google/genai';
 
 export interface CoderOptions {
   instruction: string;
-  context?: string;      // Any prior conversation or schema context
-  model?: string;        // 'gemini-2.0-flash' or 'gemini-1.5-pro'
+  context?: string;
+  model?: string;
   apiKey: string;
+}
+
+export interface CoderResult {
+  code: string;
+  execution_type: 'ONCE' | 'DAEMON' | 'CRON';
+  cron_schedule?: string;
+  reasoning: string;
+  _usage?: any;
 }
 
 const CODER_SYSTEM_PROMPT = `You are the Donna OS Coder, an expert Python automation engineer.
 Your job is to translate user intents into a single, complete, and highly robust Python script.
 
-CRITICAL RULES:
-1. OUTPUT ONLY VALID PYTHON CODE. Do not wrap your response in markdown code blocks (\`\`\`python ... \`\`\`). The raw output must be directly executable.
-2. The script must be completely self-contained. 
-3. Include error handling. Use try-except blocks and print clear error messages to stderr.
-4. Output results as structured JSON to stdout by printing it (e.g. print(json.dumps(...))).
-5. Use libraries like requests, bs4, playwright if needed. 
-6. DO NOT hardcode sensitive credentials. Read them from os.environ.get('VAR_NAME').
-7. When scraping, ensure you set a realistic User-Agent.
+ENVIRONMENT:
+- The script will run on a standard local environment (macOS/Linux/Windows).
+- The script executes in a virtual environment. You can use standard libraries (os, sys, json, requests) freely.
+- Your code must be robust, error-handled, and print clear standard output/error so the OS can parse the result.
 
-Example Output format:
-import os
-import json
-import requests
+MEMORY ENGINE (DDS Syntax & Markdown):
+- If the user asks you to "remember", "track", "save", or "log" data, you must write a Python script that appends to the appropriate Markdown file in '.donna/memory/' (e.g. transactions.md, profile.md, goals.md).
+- ALL MEMORY MUST BE WRITTEN IN 'DDS' (Donna Data Syntax) format.
+- DDS Grammar Rules:
+  1. Start with a block header: \`@domain identifier:\` (Domains: @tx, @user, @goal, @habit, @audit)
+  2. Indent properties by exactly 2 spaces.
+  3. Use extremely short keys (e.g. amt:, cat:, txt:, st:). DO NOT use quotes, brackets, or commas.
+- Example Python snippet:
+  with open('.donna/memory/transactions.md', 'a') as f:
+      f.write("\\n@tx 231025_0900:\\n  amt: -5.50\\n  cat: Food\\n  txt: Starbucks")
 
-def main():
-    try:
-        # logic here
-        print(json.dumps({"success": True, "data": ...}))
-    except Exception as e:
-        print(json.dumps({"success": False, "error": str(e)}))
+BROWSER AUTOMATION (PLAYWRIGHT):
+- If the user asks to "scrape", "search the web", "find earphones", etc., use Playwright.
+- Assume \`playwright\` is installed. Use \`from playwright.sync_api import sync_playwright\`.
+- ALWAYS run the browser in HEADLESS mode.
+- Example:
+  with sync_playwright() as p:
+      browser = p.chromium.launch(headless=True)
+      page = browser.new_page()
+      page.goto("https://example.com")
+      # Extract data, then close
+      browser.close()
 
-if __name__ == "__main__":
-    main()
+EXECUTION TYPES:
+You must analyze the user's intent to determine how the script should be executed:
+- 'ONCE': A standard script that runs immediately and finishes.
+- 'DAEMON': A permanent background script that runs continuously.
+- 'CRON': A recurring task (e.g., "every 24 hours").
+
+CRITICAL INSTRUCTIONS:
+1. Include error handling. Use try-except blocks and print clear error messages to stderr.
+2. DO NOT hardcode sensitive credentials. Read them from os.environ.get('VAR_NAME').
+3. Keep it modular and clean.
 `;
 
-export async function synthesizeScript(options: CoderOptions): Promise<string> {
-  const model = options.model || 'gemini-2.0-flash';
-  const url = `${GEMINI_API_BASE}/models/${model}:generateContent?key=${options.apiKey}`;
+const SCRIPT_SCHEMA: Schema = {
+  type: Type.OBJECT,
+  properties: {
+    code: {
+      type: Type.STRING,
+      description: 'The raw, runnable Python script. Do not wrap in markdown backticks.',
+    },
+    execution_type: {
+      type: Type.STRING,
+      description: 'Must be one of: ONCE, DAEMON, CRON',
+    },
+    cron_schedule: {
+      type: Type.STRING,
+      description: 'A standard cron expression if execution_type is CRON (e.g., "0 0 * * *"). Leave empty otherwise.',
+    },
+    reasoning: {
+      type: Type.STRING,
+      description: 'Your internal reasoning for how you structured the code and execution type.',
+    },
+  },
+  required: ['code', 'execution_type', 'reasoning'],
+};
+
+export async function synthesizeScript(options: CoderOptions): Promise<CoderResult> {
+  const model = options.model || 'gemini-3.5-flash';
+  const ai = new GoogleGenAI({ apiKey: options.apiKey });
 
   const promptText = options.context 
     ? `Context: ${options.context}\n\nTask: ${options.instruction}`
     : `Task: ${options.instruction}`;
 
-  const body = {
-    contents: [
-      {
-        role: 'user',
-        parts: [{ text: promptText }],
-      },
-    ],
-    systemInstruction: {
-      parts: [{ text: CODER_SYSTEM_PROMPT }],
-    },
-    generationConfig: {
-      temperature: 0.1, // Low temperature for code generation
-      maxOutputTokens: 4096,
-    },
-  };
+  try {
+    const response = await ai.models.generateContent({
+      model,
+      contents: promptText,
+      config: {
+        systemInstruction: CODER_SYSTEM_PROMPT,
+        temperature: 0.1,
+        maxOutputTokens: 4096,
+        responseMimeType: 'application/json',
+        responseSchema: SCRIPT_SCHEMA,
+      }
+    });
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`Donna Coder failed (${response.status}): ${errorBody}`);
+    const rawText = response.text || '{}';
+    const parsed = JSON.parse(rawText) as CoderResult;
+    parsed._usage = response.usageMetadata;
+    return parsed;
+  } catch (error: any) {
+    throw new Error(`Donna Coder failed: ${error.message}`);
   }
-
-  const data = await response.json();
-  let rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? '';
-
-  // Defensive cleanup in case the LLM ignored instructions and included markdown
-  if (rawText.startsWith('\`\`\`python')) {
-    rawText = rawText.replace(/^\`\`\`python\n/, '');
-  }
-  if (rawText.startsWith('\`\`\`')) {
-    rawText = rawText.replace(/^\`\`\`\n?/, '');
-  }
-  if (rawText.endsWith('\`\`\`')) {
-    rawText = rawText.replace(/\n?\`\`\`$/, '');
-  }
-
-  return rawText.trim();
 }

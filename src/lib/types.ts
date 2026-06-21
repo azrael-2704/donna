@@ -39,6 +39,12 @@ export interface Conversation {
   updated_at: string;
 }
 
+export interface ChatSession {
+  id: string;
+  title: string;
+  updatedAt: Date;
+}
+
 // ─── Script / Agent OS types ──────────────────────────────────────────────────
 
 export type ScriptStatus =
@@ -154,6 +160,53 @@ export interface AgentAction {
     | 'create_habit'
     | 'create_quest'
     | 'create_reminder'
-    | 'send_notification';
-  payload: Record<string, unknown>;
+    | 'send_notification'
+    | 'execute_tool'
+    | 'update_node';
+  payload: any;
+}
+
+// ─── Audit / Trace types ───────────────────────────────────────────────────────
+
+export interface TraceStep {
+  id: string;
+  type: 'input' | 'retrieve' | 'reason' | 'tool' | 'audit' | 'output';
+  agentName: string;
+  status: 'success' | 'flagged' | 'error' | 'pending';
+  latency: number;
+  cost: number;
+  confidence: number;
+  timestamp: string;
+  input: {
+    instruction?: string;
+    query?: string;
+    context?: string;
+    code?: string;
+    tool?: string;
+    args?: string;
+  };
+  reasoning: string;
+  output: {
+    result?: string;
+    data?: string;
+    code?: string;
+    error?: string;
+  };
+}
+
+export interface DecisionTrace {
+  id: string;
+  agentName: string;
+  trigger: string;
+  status: 'success' | 'flagged' | 'error';
+  startTime: string; // ISO string
+  totalLatency?: number;
+  steps: TraceStep[];
+}
+
+export interface Session {
+  id: string;
+  label: string;
+  timestamp: string;
+  traces: DecisionTrace[];
 }

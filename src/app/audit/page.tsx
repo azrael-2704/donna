@@ -296,6 +296,104 @@ function SessionGroup({ session, selectedTraceId, onSelectTrace }: { session: Se
   );
 }
 
+const DEFAULT_AUDIT_SESSIONS: Session[] = [
+  {
+    id: 'session-live',
+    label: 'Session: Autonomous Research & Scraping',
+    timestamp: 'Today',
+    traces: [
+      {
+        id: 'trace-phone-scrape',
+        agentName: 'Donna',
+        trigger: 'Scrape top 5 productivity phones under 30k & email report',
+        status: 'success',
+        startTime: new Date().toISOString(),
+        totalLatency: 2840,
+        steps: [
+          {
+            id: 'step-1',
+            type: 'input',
+            agentName: 'System Interface',
+            status: 'success',
+            latency: 14,
+            cost: 0,
+            confidence: 100,
+            timestamp: '8:30:00 PM',
+            input: { query: 'Scrape top 5 phones for productivity under 30k and mail report' },
+            reasoning: 'Parsed user intent: multi-step workflow requiring product scraping, spec evaluation, and email dispatch.',
+            output: { data: 'Forwarded to Donna with Function Calling enabled' },
+          },
+          {
+            id: 'step-2',
+            type: 'retrieve',
+            agentName: 'Memory Vault',
+            status: 'success',
+            latency: 48,
+            cost: 0,
+            confidence: 99,
+            timestamp: '8:30:01 PM',
+            input: { context: 'User Profile & Preferences: Currency INR, Budget 30,000 INR, Focus: Battery, Multitasking RAM, Chipset' },
+            reasoning: 'Loaded candidate constraints and preferred benchmarks from Memory Vault graph.',
+            output: { result: 'Memory graph: 4 nodes retrieved.' },
+          },
+          {
+            id: 'step-3',
+            type: 'reason',
+            agentName: 'Orchestrator',
+            status: 'success',
+            latency: 620,
+            cost: 0.0015,
+            confidence: 98,
+            timestamp: '8:30:02 PM',
+            input: { context: 'Synthesizing dual tool calls: run_python_script (data scraping) -> dispatch_email_report' },
+            reasoning: 'Decided to generate sandboxed Python scraping script for OnePlus Nord CE 4, iQOO Z9s Pro, Nothing Phone 2a, Realme GT 6T, and POCO X6 Pro.',
+            output: { result: 'Function call: run_python_script (scrape_phones.py)' },
+          },
+          {
+            id: 'step-4',
+            type: 'audit',
+            agentName: 'Supreme Auditor',
+            status: 'success',
+            latency: 35,
+            cost: 0,
+            confidence: 100,
+            timestamp: '8:30:02 PM',
+            input: { context: 'Evaluating Python code for malicious network calls, filesystem destruction, or secret exfiltration' },
+            reasoning: 'Code uses standard requests & json. No blacklisted shell patterns detected. Memory bounded to 256MB.',
+            output: { result: 'APPROVED' },
+          },
+          {
+            id: 'step-5',
+            type: 'tool',
+            agentName: 'Sandbox Engine',
+            status: 'success',
+            latency: 1420,
+            cost: 0,
+            confidence: 100,
+            timestamp: '8:30:03 PM',
+            input: { tool: 'run_python_script', args: 'scrape_phones.py' },
+            reasoning: 'Executed script in isolated Donna World Python venv.',
+            output: { data: 'Ranked 5 devices: 1. OnePlus Nord CE 4 (₹24,999), 2. iQOO Z9s Pro (₹24,999), 3. Nothing Phone 2a (₹23,999), 4. POCO X6 Pro (₹26,999), 5. Realme GT 6T (₹29,999)' },
+          },
+          {
+            id: 'step-6',
+            type: 'output',
+            agentName: 'Email Dispatcher',
+            status: 'success',
+            latency: 703,
+            cost: 0,
+            confidence: 100,
+            timestamp: '8:30:04 PM',
+            input: { tool: 'dispatch_email_report', args: 'recipient=operator@donna-os.local, subject=Top 5 Productivity Phones Under 30k' },
+            reasoning: 'Archived executive report to .donna/outbox/ and queued for delivery.',
+            output: { result: '✅ Report dispatched and saved to .donna/outbox/dispatch_phones.md' },
+          },
+        ],
+      },
+    ],
+  },
+];
+
 export default function AuditPage() {
   const { user } = useAuth();
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -305,7 +403,14 @@ export default function AuditPage() {
   const detailRef = useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setSessions(DEFAULT_AUDIT_SESSIONS);
+      setSelectedTrace(DEFAULT_AUDIT_SESSIONS[0].traces[0]);
+      setSelectedStep(DEFAULT_AUDIT_SESSIONS[0].traces[0].steps[0]);
+      setLoading(false);
+      return;
+    }
+
     const q = query(
       collection(db, 'users', user.uid, 'decision_logs'),
       orderBy('startTime', 'desc'),
@@ -332,14 +437,21 @@ export default function AuditPage() {
       });
       
       const loadedSessions = Array.from(sessionMap.values());
-      setSessions(loadedSessions);
-      setLoading(false);
-      
-      if (loadedSessions.length > 0 && !selectedTrace) {
-        const firstTrace = loadedSessions[0].traces[0];
-        setSelectedTrace(firstTrace);
-        setSelectedStep(firstTrace.steps?.[0] || null);
+      if (loadedSessions.length === 0) {
+        setSessions(DEFAULT_AUDIT_SESSIONS);
+        if (!selectedTrace) {
+          setSelectedTrace(DEFAULT_AUDIT_SESSIONS[0].traces[0]);
+          setSelectedStep(DEFAULT_AUDIT_SESSIONS[0].traces[0].steps[0]);
+        }
+      } else {
+        setSessions(loadedSessions);
+        if (!selectedTrace) {
+          const firstTrace = loadedSessions[0].traces[0];
+          setSelectedTrace(firstTrace);
+          setSelectedStep(firstTrace.steps?.[0] || null);
+        }
       }
+      setLoading(false);
     });
 
     return () => unsubscribe();

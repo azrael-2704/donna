@@ -6,8 +6,8 @@ def main():
     print("🚀 Starting Donna OS Kernel...")
     
     # 1. Start the Next.js Server (Web UI & Synthesizer API)
-    print("=> Booting Web Server (npm run dev)...")
-    server_process = subprocess.Popen(["npm", "run", "dev"], stdout=sys.stdout, stderr=sys.stderr)
+    print("=> Booting Web Server (npm run start)...")
+    server_process = subprocess.Popen(["npm", "run", "start"], stdout=sys.stdout, stderr=sys.stderr)
     
     # Give the server a few seconds to initialize
     time.sleep(3)

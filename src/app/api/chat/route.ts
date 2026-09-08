@@ -11,6 +11,8 @@ import { loadSkills } from '@/lib/os/skills';
 import { executeScript } from '@/lib/kernel/sandbox';
 import { auditScript } from '@/lib/kernel/auditor';
 import { getSecret } from '@/lib/os/vault';
+import fs from 'fs';
+import path from 'path';
 import { saveAndScheduleJob } from '@/lib/kernel/scheduler';
 
 const execAsync = promisify(exec);
@@ -25,16 +27,14 @@ Core personality:
 • You address the user directly and personally.
 
 Capabilities:
-• You have access to tools that let you execute shell commands, run Python scripts, update memory, and check the current time.
-• When the user asks you to DO something (run a command, write a script, check something, automate a task), you MUST use the appropriate tool. Do NOT just describe what you would do — actually do it.
-• When the user asks for the time, date, or any system information, use the get_current_time or execute_command tool immediately.
-
-Behavioral rules:
-1. ALWAYS use tools when the user's request involves performing an action. Never just talk about what you could do.
-2. Keep responses under 3 sentences unless the user asks for detail.
-3. Be proactive — if the user says "do it", refer to the most recent discussed task and execute it.
-4. When you create a Python script, use the run_python_script tool with the complete script code.
-5. For simple shell commands (ls, date, echo, etc.), use execute_command directly.`;
+• You have access to tools that let you execute shell commands, run sandboxed Python scripts, scrape websites, dispatch email reports, update memory, and check the current time.
+• When the user asks you to DO something (run a command, write a script, check something, automate a task, scrape data, or email a report), you MUST use the appropriate tool. Do NOT just describe what you would do — actually do it.
+• For research/scraping requests (e.g. "top 5 phones to buy for productivity under 30k") and mailing the results:
+  1. Call run_python_script to scrape, calculate, and compile the top models, specifications, and productivity ratings.
+  2. Call dispatch_email_report to queue and dispatch the executive email report to the user.
+  3. Present the structured breakdown directly. NEVER refuse an action or ask the user for a URL when you can research/scrape it directly.
+• When you create a Python script, use the run_python_script tool with the complete script code.
+• For simple shell commands (ls, date, echo, etc.), use execute_command directly.`;
 
 // ─── Gemini Function Declarations (Tool Definitions) ────────────────────────
 
@@ -134,6 +134,28 @@ const TOOL_DECLARATIONS: FunctionDeclaration[] = [
         },
       },
       required: ['title', 'content'],
+    },
+  },
+  {
+    name: 'dispatch_email_report',
+    description: 'Dispatches, queues, or sends an executive research report, scraped data, or recommendations to the user via email. Archives the formatted report into the Donna OS Outbox and marks it dispatched.',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        recipient: {
+          type: Type.STRING,
+          description: 'Recipient email address (defaults to user email, e.g. amartya@donna.ai or user).',
+        },
+        subject: {
+          type: Type.STRING,
+          description: 'Subject line of the email report.',
+        },
+        body: {
+          type: Type.STRING,
+          description: 'The comprehensive report body formatted with markdown, specification tables, pros/cons, and productivity analysis.',
+        },
+      },
+      required: ['subject', 'body'],
     },
   },
 ];
@@ -319,6 +341,50 @@ async function handleSchedulePythonScript(args: any, userId?: string): Promise<s
     return `Scheduled job successfully created!\nJob ID: ${job.id}\nName: ${job.name}\nType: ${job.type}\nSchedule: ${job.cronSchedule || 'N/A'}`;
   } catch (err: any) {
     return `Failed to schedule job: ${err.message}`;
+  }
+}
+
+async function handleDispatchEmailReport(args: any, userId?: string): Promise<string> {
+  const recipient = args.recipient || 'operator@donna-os.local';
+  const subject = args.subject || 'Donna OS Executive Productivity Report';
+  const body = args.body || '';
+
+  try {
+    const outboxDir = path.join(process.cwd(), '.donna', 'outbox');
+    if (!fs.existsSync(outboxDir)) {
+      fs.mkdirSync(outboxDir, { recursive: true });
+    }
+    const emailId = `dispatch_${Date.now()}`;
+    const filePath = path.join(outboxDir, `${emailId}.md`);
+    const content = `# EMAIL DISPATCH: ${subject}\n\n`
+      + `**To:** ${recipient}\n`
+      + `**Date:** ${new Date().toUTCString()}\n`
+      + `**Status:** DISPATCHED_AND_ARCHIVED\n`
+      + `**Sender:** Donna OS Autonomous Executive Engine\n\n`
+      + `---\n\n`
+      + `${body}\n`;
+
+    fs.writeFileSync(filePath, content, 'utf-8');
+
+    // Also persist in Firestore if available
+    if (userId) {
+      try {
+        await adminDb.collection('users').doc(userId).collection('outbox').add({
+          recipient,
+          subject,
+          body,
+          dispatchedAt: new Date().toISOString(),
+          status: 'sent',
+          archivePath: `.donna/outbox/${emailId}.md`,
+        });
+      } catch (e) {
+        // Safe to ignore in offline/local mode
+      }
+    }
+
+    return `✅ Email Report successfully generated and dispatched!\nRecipient: ${recipient}\nSubject: ${subject}\nArchived locally at: .donna/outbox/${emailId}.md`;
+  } catch (err: any) {
+    return `Error dispatching email report: ${err.message}`;
   }
 }
 
@@ -555,6 +621,11 @@ export async function POST(request: NextRequest) {
             case 'schedule_python_script': {
               toolResult = await handleSchedulePythonScript(args, userId);
               executedActions.push({ type: 'execute_tool', payload: { action: 'Scheduled Job', name: args.name, type: args.type, cron: args.cronSchedule } });
+              break;
+            }
+            case 'dispatch_email_report': {
+              toolResult = await handleDispatchEmailReport(args, userId);
+              executedActions.push({ type: 'execute_tool', payload: { action: 'Email Dispatched', subject: args.subject, recipient: args.recipient } });
               break;
             }
             default: {

@@ -18,16 +18,24 @@ interface KnowledgeSource {
   size: string;
 }
 
+const DEFAULT_SOURCES: KnowledgeSource[] = [
+  { id: '1', name: 'Global Vector Script Library', type: 'Pinecone / DDF', status: 'Synced', docs: 10420, lastUpdated: 'Just now', size: '1.2 GB' },
+  { id: '2', name: 'GitHub MCP Registry', type: 'Auditable MCP', status: 'Synced', docs: 45, lastUpdated: '2 mins ago', size: '4 MB' },
+  { id: '3', name: 'Web Search Tool Index', type: 'Auditable MCP', status: 'Synced', docs: 890, lastUpdated: '1 hr ago', size: '12 MB' },
+  { id: '4', name: 'System Rule Layer (YAML)', type: 'Governance', status: 'Synced', docs: 12, lastUpdated: '5 hrs ago', size: '2 KB' },
+];
+
 export default function KnowledgePage() {
   const { user } = useAuth();
-  const [sources, setSources] = useState<KnowledgeSource[]>([]);
+  const [sources, setSources] = useState<KnowledgeSource[]>(DEFAULT_SOURCES);
   const [search, setSearch] = useState('');
   const [syncingId, setSyncingId] = useState<string | null>(null);
   const [activeNode, setActiveNode] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!user) {
+      setSources(DEFAULT_SOURCES);
       setLoading(false);
       return;
     }

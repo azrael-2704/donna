@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import type { AgentAction } from '@/lib/types';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, Type, FunctionDeclaration } from '@google/genai';
 import { adminDb } from '@/lib/firebase/admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { updateGraphNode } from '@/lib/os/memory';
+import { saveAndScheduleJob } from '@/lib/kernel/scheduler';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -14,59 +16,72 @@ Core personality:
 • You speak in confident, action-oriented language. No filler phrases.
 • You address the user directly and personally.
 
-Capabilities you can reference:
-• Scripts — you can create and run Python automation scripts on the user's behalf.
-• Habits — you track recurring habits and award XP for completion.
-• Quests — you create goal-oriented missions with deadlines and XP rewards.
-• Memory — you remember user preferences, goals, and past conversations.
-• Integrations — you can connect to Google Calendar, Twilio, and other services.
+Capabilities:
+• You can remember things the user tells you using the update_memory_node tool.
+• You can schedule recurring Python scripts or daemons using schedule_task.
+• Keep responses under 3 sentences unless the user asks for detail.
+• Never fabricate data. If you don't know something, say so.
+• When the user mentions goals, habits, or preferences — call update_memory_node immediately.`;
 
-Behavioral rules:
-1. When the user describes a task to automate, acknowledge it clearly and explain what script you would create. Include a JSON action block in your response.
-2. When the user mentions goals, habits, or preferences, note them for the memory system.
-3. Keep responses under 3 sentences unless the user asks for detail.
-4. Never fabricate data. If you don't know something, say so.
-5. When you decide to perform an action (create a script, award XP, create a habit, etc.), append a JSON block at the very end of your response on its own line, formatted as:
-   <!--ACTIONS:[{"type":"<action_type>","payload":{...}}]-->
+// ─── Tool Declarations ───────────────────────────────────────────────────────
 
-Action types: create_script, award_xp, create_habit, create_quest, create_reminder, send_notification.`;
-
-const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
+const VOICE_TOOL_DECLARATIONS: FunctionDeclaration[] = [
+  {
+    name: 'update_memory_node',
+    description: "Saves or updates a piece of information in Donna's Memory Vault. Call when the user mentions goals, preferences, habits, or facts about themselves.",
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        title: {
+          type: Type.STRING,
+          description: 'Title for the memory node (e.g. "User Preferences", "Project Goals").',
+        },
+        content: {
+          type: Type.STRING,
+          description: 'The markdown content to save in the memory node.',
+        },
+      },
+      required: ['title', 'content'],
+    },
+  },
+  {
+    name: 'schedule_task',
+    description: 'Schedules a recurring Python script or background daemon. Use when the user asks for something to run periodically or continuously.',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        name: {
+          type: Type.STRING,
+          description: 'A short readable name for the task.',
+        },
+        code: {
+          type: Type.STRING,
+          description: 'Complete, runnable Python script code.',
+        },
+        cronSchedule: {
+          type: Type.STRING,
+          description: 'Standard cron expression, e.g. "*/5 * * * *". Omit for DAEMON type.',
+        },
+        type: {
+          type: Type.STRING,
+          description: '"CRON" or "DAEMON". Defaults to "CRON".',
+        },
+      },
+      required: ['name', 'code'],
+    },
+  },
+];
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function getGeminiApiKey(): string {
   const key = process.env.GEMINI_API_KEY;
-  if (!key) {
-    throw new Error('Missing GEMINI_API_KEY environment variable');
-  }
+  if (!key) throw new Error('Missing GEMINI_API_KEY environment variable');
   return key;
 }
 
 /**
- * Parse action directives embedded in the LLM response text.
- * The model is instructed to append <!--ACTIONS:[...]-->  at the end.
- */
-function parseActions(text: string): { cleanText: string; actions: AgentAction[] } {
-  const actionPattern = /<!--ACTIONS:(\[[\s\S]*?\])-->/;
-  const match = text.match(actionPattern);
-
-  if (!match) {
-    return { cleanText: text.trim(), actions: [] };
-  }
-
-  try {
-    const actions = JSON.parse(match[1]) as AgentAction[];
-    const cleanText = text.replace(actionPattern, '').trim();
-    return { cleanText, actions };
-  } catch {
-    return { cleanText: text.trim(), actions: [] };
-  }
-}
-
-/**
  * Transcribe audio using Gemini's multimodal capabilities.
- * Sends the raw audio as inline base64 data to the Gemini model.
  */
 async function transcribeAudio(
   audioBase64: string,
@@ -75,64 +90,46 @@ async function transcribeAudio(
   const apiKey = getGeminiApiKey();
   const ai = new GoogleGenAI({ apiKey });
 
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            {
-              inlineData: {
-                data: audioBase64,
-                mimeType: mimeType,
-              }
-            },
-            {
-              text: 'Transcribe the audio above accurately. Return ONLY the transcribed text, nothing else. If the audio is silent or unintelligible, respond with "[SILENT]".'
-            }
-          ]
-        }
-      ],
-      config: {
-        temperature: 0.0,
-        maxOutputTokens: 2048,
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: [
+      {
+        role: 'user',
+        parts: [
+          { inlineData: { data: audioBase64, mimeType } },
+          { text: 'Transcribe the audio above accurately. Return ONLY the transcribed text, nothing else. If the audio is silent or unintelligible, respond with "[SILENT]".' }
+        ]
       }
-    });
+    ],
+    config: { temperature: 0.0, maxOutputTokens: 2048 }
+  });
 
-    let text = (response.text || '').trim();
-    
-    // Filter known Gemini ASR hallucinations on silence/noise
-    const hallucinations = [
-      "i'm not sure if i'm going to be able to make it to the meeting",
-      "thank you for watching",
-      "thank you.",
-      "subtitles by",
-      "amara.org",
-      "you"
-    ];
-    
-    if (hallucinations.some(h => text.toLowerCase().includes(h) && text.length < 65)) {
-      text = '[SILENT]';
-    }
+  let text = (response.text || '').trim();
 
-    return {
-      text,
-      confidence: text === '[SILENT]' ? 0 : 0.95,
-    };
-  } catch (error: any) {
-    throw new Error(`Gemini transcription failed: ${error.message}`);
+  // Filter known Gemini ASR hallucinations on silence/noise
+  const hallucinations = [
+    "i'm not sure if i'm going to be able to make it to the meeting",
+    "thank you for watching",
+    "thank you.",
+    "subtitles by",
+    "amara.org",
+    "you"
+  ];
+  if (hallucinations.some(h => text.toLowerCase().includes(h) && text.length < 65)) {
+    text = '[SILENT]';
   }
+
+  return { text, confidence: text === '[SILENT]' ? 0 : 0.95 };
 }
 
 /**
- * Generate the agent response using Gemini.
+ * Generate agent response using Gemini Function Calling.
+ * Returns the final text response and any executed actions.
  */
-async function generateAgentResponse(transcript: string): Promise<{
-  text: string;
-  actions: AgentAction[];
-  rawTextLength?: number;
-}> {
+async function generateAgentResponse(
+  transcript: string,
+  userId?: string
+): Promise<{ text: string; actions: AgentAction[]; rawTextLength?: number }> {
   const apiKey = getGeminiApiKey();
   const cookieStore = await cookies();
   let selectedModel = cookieStore.get('selected_model')?.value || 'gemini-2.5-flash';
@@ -141,11 +138,86 @@ async function generateAgentResponse(transcript: string): Promise<{
   const maxTokensVal = parseInt(cookieStore.get('model_max_tokens')?.value || '1024', 10);
 
   const ai = new GoogleGenAI({ apiKey });
+  const executedActions: AgentAction[] = [];
 
+  // Step 1: Initial LLM call with tools
+  const response = await ai.models.generateContent({
+    model: selectedModel,
+    contents: [{ role: 'user', parts: [{ text: transcript }] }],
+    config: {
+      systemInstruction: DONNA_SYSTEM_PROMPT,
+      temperature: temperatureVal,
+      maxOutputTokens: maxTokensVal,
+      tools: [{ functionDeclarations: VOICE_TOOL_DECLARATIONS }],
+    }
+  });
+
+  const candidate = response.candidates?.[0];
+  const parts = candidate?.content?.parts || [];
+  const textParts = parts.filter((p: any) => p.text).map((p: any) => p.text as string);
+  const functionCalls = parts.filter((p: any) => p.functionCall);
+
+  // If no function calls, return text directly
+  if (functionCalls.length === 0) {
+    const finalText = textParts.join('') || '';
+    return { text: finalText, actions: [], rawTextLength: finalText.length };
+  }
+
+  // Step 2: Execute function calls
+  let finalText = textParts.join('');
+  const functionResponseParts: any[] = [];
+
+  for (const part of functionCalls) {
+    const { name } = part.functionCall!;
+    const args: any = part.functionCall!.args || {};
+    let toolResult = '';
+
+    try {
+      switch (name) {
+        case 'update_memory_node': {
+          if (userId) {
+            await updateGraphNode(userId, args.title, args.content);
+            toolResult = `Memory node "${args.title}" saved.`;
+          } else {
+            toolResult = 'Cannot update memory: no authenticated user.';
+          }
+          executedActions.push({ type: 'update_node', payload: { title: args.title, content: args.content } });
+          break;
+        }
+        case 'schedule_task': {
+          const job = saveAndScheduleJob(
+            args.code,
+            args.name,
+            args.type === 'DAEMON' ? 'DAEMON' : 'CRON',
+            args.cronSchedule
+          );
+          toolResult = `Task "${job.name}" scheduled (ID: ${job.id}).`;
+          executedActions.push({ type: 'execute_tool', payload: { action: 'Scheduled Job', name: args.name, cron: args.cronSchedule } });
+          break;
+        }
+        default:
+          toolResult = `Unknown tool: ${name}`;
+      }
+    } catch (err: any) {
+      toolResult = `Tool error: ${err.message}`;
+    }
+
+    functionResponseParts.push({
+      functionResponse: { name, response: { result: toolResult } }
+    });
+  }
+
+  // Step 3: Follow-up call so Gemini summarizes the tool results in natural language
   try {
-    const response = await ai.models.generateContent({
+    const followUpContents = [
+      { role: 'user', parts: [{ text: transcript }] },
+      { role: 'model', parts: functionCalls.map((p: any) => p) },
+      { role: 'user', parts: functionResponseParts },
+    ];
+
+    const followUp = await ai.models.generateContent({
       model: selectedModel,
-      contents: transcript,
+      contents: followUpContents,
       config: {
         systemInstruction: DONNA_SYSTEM_PROMPT,
         temperature: temperatureVal,
@@ -153,13 +225,15 @@ async function generateAgentResponse(transcript: string): Promise<{
       }
     });
 
-    const rawText = response.text || '';
-    const { cleanText, actions } = parseActions(rawText);
-    return { text: cleanText, actions, rawTextLength: rawText.length };
-  } catch (error: any) {
-    throw new Error(`Gemini LLM call failed: ${error.message}`);
+    finalText = followUp.text || finalText;
+  } catch (err: any) {
+    console.error('[voice/process] Follow-up LLM call failed:', err.message);
+    // Fallback: keep accumulated text
   }
+
+  return { text: finalText, actions: executedActions, rawTextLength: finalText.length };
 }
+
 
 // ─── Route Handler ──────────────────────────────────────────────────────────
 
@@ -224,7 +298,7 @@ export async function POST(request: NextRequest) {
 
     // ── Step 2: Generate agent response ────────────────────────────────────
     const startTime = Date.now();
-    const agentResult = await generateAgentResponse(transcription.text);
+    const agentResult = await generateAgentResponse(transcription.text, userId ?? undefined);
     const latency = Date.now() - startTime;
 
     // ── Log decision trace to Firestore ────────────────────────────────────

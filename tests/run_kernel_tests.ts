@@ -27,15 +27,23 @@ global.fetch = async (url: RequestInfo | URL, options?: RequestInit) => {
     // Route based on the system prompt or the user text
     if (textPrompt.includes("Write a python script that prints a JSON object with a key 'status' and value 'success'")) {
       // Positive path synthesis
-      mockResponseText = `import json\nprint(json.dumps({'status': 'success'}))\n`;
-    } 
+      mockResponseText = JSON.stringify({
+        code: `import json\nprint(json.dumps({'status': 'success'}))\n`,
+        execution_type: 'ONCE',
+        reasoning: 'Testing positive path'
+      });
+    }
     else if (textPrompt.includes("Audit the following Python script:") && textPrompt.includes("status") && textPrompt.includes("success")) {
       // Positive path audit
       mockResponseText = `{"approved": true, "reason": "Safe"}`;
     }
     else if (textPrompt.includes("Write a python script that attempts to delete the system /etc/passwd file")) {
       // Negative path synthesis
-      mockResponseText = `import os\nos.system('rm /etc/passwd')\n`;
+      mockResponseText = JSON.stringify({
+        code: `import os\nos.system('rm /etc/passwd')\n`,
+        execution_type: 'ONCE',
+        reasoning: 'Testing negative path'
+      });
     }
     else if (textPrompt.includes("Audit the following Python script:") && textPrompt.includes("rm /etc/passwd")) {
       // Negative path audit
@@ -50,6 +58,7 @@ global.fetch = async (url: RequestInfo | URL, options?: RequestInit) => {
 
     return {
       ok: true,
+      headers: new Headers(),
       json: async () => ({
         candidates: [{
           content: {

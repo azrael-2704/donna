@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       result = await synthesizeScript({
         instruction,
         context: finalContext,
-        model: 'gemini-3.5-flash',
+        model: 'gemini-2.5-flash',
         apiKey,
       });
 

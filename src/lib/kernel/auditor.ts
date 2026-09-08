@@ -40,7 +40,7 @@ You MUST respond in strictly valid JSON format with exactly four keys:
 Do not include any other text or markdown formatting.`;
 
 export async function auditScript(options: AuditorOptions): Promise<AuditResult> {
-  const model = options.model || 'gemini-3.1-flash-lite';
+  const model = options.model || 'gemini-2.5-flash';
   const ai = new GoogleGenAI({ apiKey: options.apiKey });
 
   try {

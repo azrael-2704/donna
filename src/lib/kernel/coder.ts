@@ -87,7 +87,7 @@ const SCRIPT_SCHEMA: Schema = {
 };
 
 export async function synthesizeScript(options: CoderOptions): Promise<CoderResult> {
-  const model = options.model || 'gemini-3.5-flash';
+  const model = options.model || 'gemini-2.5-flash';
   const ai = new GoogleGenAI({ apiKey: options.apiKey });
 
   const promptText = options.context 

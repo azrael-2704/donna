@@ -16,7 +16,7 @@ source donnas-world/bin/activate
 
 # Install common dependencies that the Master Coder LLM might use
 echo "Installing base dependencies..."
-pip install requests beautifulsoup4 playwright
+pip install requests beautifulsoup4 playwright python-dotenv
 
 # Install playwright browsers
 echo "Installing playwright browsers..."

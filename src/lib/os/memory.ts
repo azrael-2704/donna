@@ -21,7 +21,7 @@ export async function readVaultGraph(userId: string): Promise<string> {
       .get();
 
     if (snapshot.empty) {
-      return 'No memory nodes found.';
+      return '';
     }
 
     let graphContext = '--- MEMORY VAULT START ---\n\n';

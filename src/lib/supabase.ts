@@ -2,40 +2,20 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createBrowserClient as createSupabaseBrowserClient } from '@supabase/ssr';
 
 // ---------------------------------------------------------------------------
-// Environment helpers
+// Environment helpers — return null instead of throwing when vars are missing
+// so the module is safe to import even without Supabase configured.
 // ---------------------------------------------------------------------------
 
-function getSupabaseUrl(): string {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!url) {
-    throw new Error(
-      'Missing environment variable NEXT_PUBLIC_SUPABASE_URL. ' +
-        'Add it to .env.local — see .env.example for reference.'
-    );
-  }
-  return url;
+function getSupabaseUrl(): string | null {
+  return process.env.NEXT_PUBLIC_SUPABASE_URL ?? null;
 }
 
-function getSupabaseAnonKey(): string {
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!key) {
-    throw new Error(
-      'Missing environment variable NEXT_PUBLIC_SUPABASE_ANON_KEY. ' +
-        'Add it to .env.local — see .env.example for reference.'
-    );
-  }
-  return key;
+function getSupabaseAnonKey(): string | null {
+  return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? null;
 }
 
-function getSupabaseServiceRoleKey(): string {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!key) {
-    throw new Error(
-      'Missing environment variable SUPABASE_SERVICE_ROLE_KEY. ' +
-        'Add it to .env.local — see .env.example for reference.'
-    );
-  }
-  return key;
+function getSupabaseServiceRoleKey(): string | null {
+  return process.env.SUPABASE_SERVICE_ROLE_KEY ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -43,17 +23,15 @@ function getSupabaseServiceRoleKey(): string {
 // ---------------------------------------------------------------------------
 
 /**
- * Create a Supabase client for use in **server-side** contexts
- * (API routes, Server Components, middleware).
- *
- * Uses the anon key so RLS policies are enforced.
+ * Create a Supabase client for use in **server-side** contexts.
+ * Returns null if Supabase environment variables are not configured.
  */
 export function createClient() {
-  return createSupabaseClient(getSupabaseUrl(), getSupabaseAnonKey(), {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
+  const url = getSupabaseUrl();
+  const key = getSupabaseAnonKey();
+  if (!url || !key) return null;
+  return createSupabaseClient(url, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
   });
 }
 
@@ -62,17 +40,16 @@ export function createClient() {
 // ---------------------------------------------------------------------------
 
 /**
- * Create a Supabase client that **bypasses** Row Level Security.
- *
- * ⚠️  Only use this in trusted server contexts (API routes, cron jobs).
- *     Never expose the service role key to the browser.
+ * Create a Supabase admin client (bypasses RLS).
+ * Returns null if Supabase environment variables are not configured.
+ * ⚠️  Only use in trusted server contexts — never expose to the browser.
  */
 export function createAdminClient() {
-  return createSupabaseClient(getSupabaseUrl(), getSupabaseServiceRoleKey(), {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
+  const url = getSupabaseUrl();
+  const key = getSupabaseServiceRoleKey();
+  if (!url || !key) return null;
+  return createSupabaseClient(url, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
   });
 }
 
@@ -82,13 +59,12 @@ export function createAdminClient() {
 
 /**
  * Create a Supabase client for use in **browser** / Client Components.
- *
- * Uses the public anon key and persists the session in cookies via
- * `@supabase/ssr`.
+ * Returns null if Supabase environment variables are not configured.
  */
 export function createBrowserClient() {
-  return createSupabaseBrowserClient(
-    getSupabaseUrl(),
-    getSupabaseAnonKey()
-  );
+  const url = getSupabaseUrl();
+  const key = getSupabaseAnonKey();
+  if (!url || !key) return null;
+  return createSupabaseBrowserClient(url, key);
 }
+

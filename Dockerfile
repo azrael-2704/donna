@@ -1,7 +1,7 @@
 # Multi-stage production Dockerfile for Donna OS
-# Includes Node.js 20 runtime and Python 3 for the Autonomous Kernel Engine
+# Includes Node.js 22 runtime and Python 3 for the Autonomous Kernel Engine
 
-FROM node:20-bookworm-slim AS base
+FROM node:22-bookworm-slim AS base
 
 # Install Python 3, venv, and build essentials
 RUN apt-get update && apt-get install -y --no-install-recommends \
